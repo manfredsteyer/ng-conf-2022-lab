@@ -208,19 +208,19 @@ This was quite easy, wasn't it? However, we can improve this solution a bit. Ide
 
 1. Switch to the `shell` project and open the file `main.ts`. Adjust it as follows:
 
-  ```typescript
-  import { loadRemoteEntry } from '@angular-architects/module-federation';
+    ```typescript
+    import { loadRemoteEntry } from '@angular-architects/module-federation';
 
-  Promise.all([
-    loadRemoteEntry({
-      type: 'module',
-      remoteEntry: 'http://localhost:4201/remoteEntry.js',
-    }),
-  ])
-  .catch((err) => console.error('Error loading remote entries', err))
-  .then(() => import('./bootstrap'))
-  .catch((err) => console.error(err));
-   ```
+    Promise.all([
+      loadRemoteEntry({
+        type: 'module',
+        remoteEntry: 'http://localhost:4201/remoteEntry.js',
+      }),
+    ])
+    .catch((err) => console.error('Error loading remote entries', err))
+    .then(() => import('./bootstrap'))
+    .catch((err) => console.error(err));
+    ```
 
 2. Restart both, the `shell` and the micro frontend (`mfe1`).
 
@@ -233,101 +233,101 @@ This was quite easy, wasn't it? However, we can improve this solution a bit. Ide
 
 1. Add a library to your monorepo:
 
-  ```
-  ng g lib auth-lib
-  ```
+    ```
+    ng g lib auth-lib
+    ```
 
 2. In your `tsconfig.json` in the workspace's root, adjust the path mapping for `auth-lib` so that it points to the libs entry point:
 
-  ```json
-  "auth-lib": [
-      "projects/auth-lib/src/public-api.ts"
-  ]
-  ```
+    ```json
+    "auth-lib": [
+        "projects/auth-lib/src/public-api.ts"
+    ]
+    ```
 
 3. As most IDEs only read global configuration files like the `tsconfig.json` once, restart your IDE (Alternatively, your IDE might also provide an option for reloading these settings).
 
 4. Switch to your `auth-lib` project and open the file `auth-lib.service.ts` (`projects\auth-lib\src\lib\auth-lib.service.ts`). Adjust it as follows:
 
-  ```typescript
-  import { Injectable } from '@angular/core';
+    ```typescript
+    import { Injectable } from '@angular/core';
 
-  @Injectable({
-    providedIn: 'root',
-  })
-  export class AuthLibService {
-    private userName: string;
+    @Injectable({
+      providedIn: 'root',
+    })
+    export class AuthLibService {
+      private userName: string;
 
-    public get user(): string {
-      return this.userName;
+      public get user(): string {
+        return this.userName;
+      }
+
+      constructor() {}
+
+      public login(userName: string, password: string): void {
+        // Authentication for **honest** users TM. (c) Manfred Steyer
+        this.userName = userName;
+      }
     }
-
-    constructor() {}
-
-    public login(userName: string, password: string): void {
-      // Authentication for **honest** users TM. (c) Manfred Steyer
-      this.userName = userName;
-    }
-  }
-  ```
+    ```
 
 5. Switch to your `shell` project and open its `app.component.ts` (`projects\shell\src\app\app.component.ts`). Use the `AuthLibService` to login a user:
 
-  ```typescript
-  [...]
+    ```typescript
+    [...]
 
-  // IMPORTANT: Make sure you import the service
-  //  from 'auth-lib'!
-  import { AuthLibService } from 'auth-lib';
+    // IMPORTANT: Make sure you import the service
+    //  from 'auth-lib'!
+    import { AuthLibService } from 'auth-lib';
 
-  [...]
+    [...]
 
-  @Component({
-    selector: 'app-root',
-    templateUrl: './app.component.html',
-  })
-  export class AppComponent {
-    title = 'shell';
+    @Component({
+      selector: 'app-root',
+      templateUrl: './app.component.html',
+    })
+    export class AppComponent {
+      title = 'shell';
 
-    constructor(private service: AuthLibService) {
-      this.service.login('Max', null);
+      constructor(private service: AuthLibService) {
+        this.service.login('Max', null);
+      }
     }
-  }
-  ```
+    ```
 
 6. Switch to your `mfe1` project and open its `flights-search.component.ts` (``projects\mfe1\src\app\flights\flights-search\flights-search.component.ts``). Use the shared service to retrieve the current user's name:
 
-  ```typescript
-  [...]
+    ```typescript
+    [...]
 
-  // IMPORTANT: Make sure you import the service
-  //  from 'auth-lib'!
-  import { AuthLibService } from 'auth-lib';
+    // IMPORTANT: Make sure you import the service
+    //  from 'auth-lib'!
+    import { AuthLibService } from 'auth-lib';
 
-  [...]
+    [...]
 
-  export class FlightsSearchComponent {
+    export class FlightsSearchComponent {
 
-      // Add this:
-      user = this.service.user;
+        // Add this:
+        user = this.service.user;
 
-      // And add that:
-      constructor(private service: AuthLibService) { }
+        // And add that:
+        constructor(private service: AuthLibService) { }
 
-      [...]
-  }
-  ```
+        [...]
+    }
+    ```
 
 7. Open this component's template(`flights-search.component.html`) and data bind the property `user`:
 
-  ```html
-  <div id="container">
+    ```html
+    <div id="container">
 
-    <!-- Add this line: -->
-    <div>User: {{user}}</div>
-    [...]
-  </div>
-  ```
+      <!-- Add this line: -->
+      <div>User: {{user}}</div>
+      [...]
+    </div>
+    ```
 
 8. Restart both, the `shell` and the micro frontend (`mfe1`).
 
